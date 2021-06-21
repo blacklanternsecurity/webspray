@@ -1,21 +1,27 @@
 # Webspray
 Fuzz for hidden proxies, vhosts, and URLs
 
+## Installation
+~~~
+$ pip install pipx
+$ pipx install webspray
+~~~
+
 ## Example 1: "Dirbust" across multiple hosts
 NOTE: Webspray arguments accept any combination of strings and/or files containing strings
 ~~~
-$ ./webspray.py ./evilcorp_hosts.txt --append /web.config.bak /robots.txt
+$ webspray.py ./evilcorp_hosts.txt --append /web.config.bak /robots.txt
 ~~~
 
 ## Example 2: Scan for hidden proxies by trying to visit an internal-only resource
 TIP: You can specify the `--no-connect` option to skip the `CONNECT` HTTP method and send the request anyway
 ~~~
-$ ./webspray.py http://intranet.evilcorp.local --proxies ./evilcorp_tcp_8080.txt
+$ webspray.py http://intranet.evilcorp.local --proxies ./evilcorp_tcp_8080.txt
 ~~~
 
 ## Example 3: Scan for virtual hosts
 ~~~
-$ ./webspray.py http://1.1.1.1 http://2.2.2.2 --vhosts ./evilcorp_vhosts.txt
+$ webspray.py http://1.1.1.1 http://2.2.2.2 --vhosts ./evilcorp_vhosts.txt
 ~~~
 
 ## Combining these attacks, to infinity and beyond...
@@ -24,7 +30,7 @@ Any of the above attacks can be chained together.
 
 ## Help
 ~~~
-$ ./webspray.py --help
+$ webspray.py --help
 usage: webspray.py [-h] [-a APPEND [APPEND ...]] [-v VHOSTS [VHOSTS ...]] [-p PROXIES [PROXIES ...]] [-n] [-c COOKIES [COOKIES ...]] [-t THREADS] [-i IGNORE [IGNORE ...]]
                    [-s SAVE [SAVE ...]] [-m METHOD] [-T TIMEOUT] [-U USER_AGENT] [-d]
                    urls [urls ...]
