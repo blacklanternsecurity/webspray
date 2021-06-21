@@ -8,10 +8,10 @@ import logging
 import argparse
 import requests
 import ipaddress
-from lib import logger
+from .lib import logger
 from pathlib import Path
 #from concurrent.futures import ThreadPoolExecutor
-from lib.threadpool import ThreadPool
+from .lib.threadpool import ThreadPool
 
 from urllib3.exceptions import InsecureRequestWarning
 # Suppress only the single warning from urllib3 needed.
@@ -116,14 +116,17 @@ def line_to_url(l):
 
 
 
-def save_response(response):
+def save_response(response, vhost):
+
+    if vhost is None:
+        vhost = ''
 
     allowed_chars = string.ascii_uppercase + string.ascii_lowercase + string.digits + '_-.'
 
-    save_dir = Path('.').absolute() / 'responses'
+    save_dir = Path.home() / '.webspray' / 'responses'
     save_dir.mkdir(exist_ok=True)
 
-    file_name = f'{int(time.time())}_' + ''.join([c for c in response.url.replace('/', '_').replace(':', '_') if c in allowed_chars]).replace('__', '_')
+    file_name = f'{int(time.time())}_{vhost}_' + ''.join([c for c in response.url.replace('/', '_').replace(':', '_') if c in allowed_chars]).replace('__', '_')
     if len(file_name) > 100:
         file_name = file_name[:50] + '...' + file_name[-50:]
 
@@ -235,7 +238,7 @@ def visit_url(url, options, vhost=None, proxy=None):
         #else:
         #    log.debug(f'{response.status_code} / {len(response.text):09d} / {(proxy if proxy else "")} / {title}: {url}')
         if response.status_code in options.save:
-            save_response(response)
+            save_response(response, vhost)
 
     except requests.exceptions.RequestException as e:
         log.debug(f'Error in request: {e}')
@@ -249,29 +252,24 @@ def visit_url(url, options, vhost=None, proxy=None):
         raise
 
 
-
 def main(options):
 
     with ThreadPool(max_workers=options.threads) as pool:
         for append in options.append:
-            for url in options.urls:
+            for url in options.targets:
                 for proxy in options.proxies:
                     for vhost in options.vhosts:
                         pool.submit(visit_url, f'{url}{append}', options, vhost=vhost, proxy=proxy)
 
 
-
-
-
-
-if __name__ == '__main__':
+def go():
 
     default_user_agent = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36'
     default_ignore = [301,302,400,401,403,404,500,502,503]
     default_save = [200]
 
     parser = argparse.ArgumentParser(description='Fuzz for hidden proxies, vhosts, and URLs')
-    parser.add_argument('urls', nargs='+', help='URLs')
+    parser.add_argument('targets', nargs='+', help='target hosts or URLs (accepts CIDR notation)')
     parser.add_argument('-a', '--append', nargs='+', default=[''], help='append these to the URLs')
     parser.add_argument('-v', '--vhosts', nargs='+', default=[None], help='try each of these virtual hosts')
     parser.add_argument('-p', '--proxies', nargs='+', default=[None], help='try against each of these proxies (proto://proxy:port) (if you\'re trying to proxy through Burp, use proxychains)')
@@ -293,11 +291,16 @@ if __name__ == '__main__':
         if len(sys.argv) < 2:
             parser.print_help()
             sys.exit(0)
+        else:
+            log.info(f'Logging to: {logger.logdir}')
 
         options = parser.parse_args()
 
         if options.debug:
             logging.getLogger('webspray').setLevel(logging.DEBUG)
+
+        # log full command
+        log.info(f'Full command: {" ".join(sys.argv)}')
 
         # handle proxies
         options.proxies = get_lines(options.proxies)
@@ -307,11 +310,11 @@ if __name__ == '__main__':
         log.info(f'Threads: {options.threads}')
 
         # handle saves
-        log.info(f'Saving status codes "{" ".join([str(s) for s in options.save])}" in ./responses')
+        log.info(f'Saving status codes "{" ".join([str(s) for s in options.save])}" in ~/.webspray/responses')
 
         # handle urls
-        options.urls = get_urls(options.urls)
-        log.info(f'URLs: {len(options.urls):,}')
+        options.targets = get_urls(options.targets)
+        log.info(f'URLs: {len(options.targets):,}')
 
         # handle urls
         options.vhosts = get_lines(options.vhosts)
@@ -352,3 +355,7 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         log.critical('Interrupted')
         sys.exit(1)
+
+
+if __name__ == '__main__':
+    go()

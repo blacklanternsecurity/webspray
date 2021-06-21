@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "webspray"
+version = "1.0.0"
+description = "Fuzz for hidden proxies, vhosts, and URLs across many hosts"
+authors = ["TheTechromancer"]
+license = "GPL-3.0"
+
+[tool.poetry.scripts]
+webspray = 'webspray.webspray:go'
+
+[tool.poetry.dependencies]
+python = "^3.6"
+lxml = "^4.6.3"
+beautifulsoup4 = "^4.9.3"
+requests = "^2.25.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

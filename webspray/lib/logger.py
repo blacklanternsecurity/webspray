@@ -100,7 +100,7 @@ term_handler.setFormatter(ColoredFormatter('%(levelname)s %(message)s'))
 
 ### LOG TO FILE ###
 
-logdir = Path(__file__).absolute().parent.parent / 'logs'
+logdir = Path.home() / '.webspray' / 'logs'
 logdir.mkdir(parents=True, exist_ok=True)
 date_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 filename = f'dirspray_{date_str}.log'
