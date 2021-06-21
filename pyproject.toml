@@ -4,6 +4,8 @@ version = "1.0.0"
 description = "Fuzz for hidden proxies, vhosts, and URLs across many hosts"
 authors = ["TheTechromancer"]
 license = "GPL-3.0"
+repository = "https://github.com/blacklanternsecurity/webspray"
+homepage = "https://github.com/blacklanternsecurity/webspray"
 
 [tool.poetry.scripts]
 webspray = 'webspray.webspray:go'
